@@ -31,4 +31,13 @@ else {
   print "Failed to find author.\n";
 }
 
+my $num = 0;
+my @image_links = $dom->find('div[id="content"] a[href] img')->each;
+foreach my $link (@image_links) {
+  $num = $num + 1;
+  print "$num: '$link'\n";
+}
+
+print "Final count: $num\n";
+
 print "Done.";
