@@ -59,6 +59,7 @@ foreach my $img_element (@image_links) {
 }
 
 my $directory_name = "$title - $author";
+$directory_name =~ s/[\:\\\/\*\?\"<>\|]/_/g;
 if (-d $directory_name) {
   print "Directory '$directory_name' already exists; skipping step.\n";
 }
