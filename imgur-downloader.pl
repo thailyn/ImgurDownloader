@@ -17,7 +17,7 @@ my $dom = Mojo::DOM->new($html);
 #my $title_element = $dom->at('title');
 my $title_element = $dom->at('html head title');
 if ($title_element) {
-  print "Title: $title_element->text\n";
+  print "Title: " . $title_element->all_text . "\n";
 }
 else {
   print "Failed to find title.\n";
