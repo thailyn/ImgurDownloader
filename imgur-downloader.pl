@@ -33,9 +33,11 @@ else {
 
 my $num = 0;
 my @image_links = $dom->find('div[id="content"] a[href] img')->each;
-foreach my $link (@image_links) {
+foreach my $img_element (@image_links) {
   $num = $num + 1;
-  print "$num: '$link'\n";
+  my $link = $img_element->attr('src');
+  $link =~ s|//|/|g;
+  print "$num: 'http:$link'\n";
 }
 
 print "Final count: $num\n";
