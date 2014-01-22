@@ -23,4 +23,12 @@ else {
   print "Failed to find title.\n";
 }
 
+my $author_element = $dom->at('html head meta[name="author"]');
+if ($author_element) {
+  print "Author: " . $author_element->attr('content') . ".\n";
+}
+else {
+  print "Failed to find author.\n";
+}
+
 print "Done.";
