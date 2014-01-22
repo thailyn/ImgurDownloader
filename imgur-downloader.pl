@@ -55,7 +55,7 @@ foreach my $img_element (@image_links) {
   $num = $num + 1;
   my $link = $img_element->attr('src');
   $link =~ s|//|/|g;
-  print "$num: 'http:$link'\n";
+  #print "$num: 'http:$link'\n";
 }
 
 my $directory_name = "$title - $author";
