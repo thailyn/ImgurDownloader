@@ -14,7 +14,8 @@ print "All good.  File: $inputFile.\n";
 
 my $dom = Mojo::DOM->new($html);
 
-my $title_element = $dom->at('title'); #match('html head title');
+#my $title_element = $dom->at('title');
+my $title_element = $dom->at('html head title');
 if ($title_element) {
   print "Title: $title_element->text\n";
 }
