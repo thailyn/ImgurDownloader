@@ -22,7 +22,7 @@ if ($title_element) {
   print "Title: " . $title . "\n";
 }
 else {
-  print "Failed to find title.\n";
+  die "Failed to find title.\n";
 }
 
 my $author_element = $dom->at('html head meta[name="author"]');
@@ -31,7 +31,7 @@ if ($author_element) {
   print "Author: " . $author . ".\n";
 }
 else {
-  print "Failed to find author.\n";
+  die "Failed to find author.\n";
 }
 
 my $num = 0;
