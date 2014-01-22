@@ -43,6 +43,18 @@ foreach my $img_element (@image_links) {
   print "$num: 'http:$link'\n";
 }
 
+my $directory_name = "$title - $author";
+if (-d $directory_name) {
+  print "Directory '$directory_name' already exists; skipping step.";
+}
+elsif (-e $directory_name) {
+  die "$0: File with name '$directory_name' exists and is not a directory.\n";
+}
+else {
+  mkdir $directory_name or die "Failed to create directory '$directory_name': $!";
+  print "Created directory '$directory_name'.\n";
+}
+
 print "Final count: $num\n";
 
 print "Done.";
