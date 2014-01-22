@@ -1,7 +1,19 @@
 use strict;
+use LWP::Simple;
 use Mojo::DOM;
 
-my $inputFile = shift;
+my $temp_html_file = "temp.html";
+
+# 'http://imgur.com/a/3mGHa/noscript'
+my $url = shift;
+die "$0: Must provide an input url" unless $url;
+print "URL: $url\n";
+
+my $return_code = getstore($url, $temp_html_file);
+die "$0: Failed to get page: $return_code" unless defined is_success($return_code);
+print "Return code: $return_code\n";
+
+my $inputFile = $temp_html_file;
 die "Error: Must provide an input file name" unless $inputFile;
 die "Error: Input file must exist" unless -e $inputFile;
 
@@ -45,7 +57,7 @@ foreach my $img_element (@image_links) {
 
 my $directory_name = "$title - $author";
 if (-d $directory_name) {
-  print "Directory '$directory_name' already exists; skipping step.";
+  print "Directory '$directory_name' already exists; skipping step.\n";
 }
 elsif (-e $directory_name) {
   die "$0: File with name '$directory_name' exists and is not a directory.\n";
