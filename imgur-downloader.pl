@@ -79,19 +79,17 @@ for my $link (@image_links) {
 
   # regex would not handle files without extensions
   if ($file_name =~ m|i\.imgur\.com\/(.*\.[a-zA-Z0-9]+)|) {
-    print "File name: $file_name\n";
-    print "Match    : $1\n";
     $file_name = $1;
   }
     
   my $file_path = $directory_name . "/" . sprintf("%03d", $num) . "-" . $file_name;
-  print "file path: $file_path\n";
-  print "url: $link\n";
+  print sprintf("%03d", $num) . ": $link -> $file_path...";
   $response = $mech->get($image_url);
   die "$0: Request failed" unless $response->is_success;
   open(my $image_fout, ">:raw", $file_path) or die "Can not open file '$temp_html_file': $!";
   print $image_fout $response->decoded_content;
   close($image_fout);
+  print " done.\n";
 }
 
 print "Done.";
