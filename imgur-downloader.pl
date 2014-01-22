@@ -13,11 +13,13 @@ print "All good.  File: $inputFile.\n";
 #print "Contents:\n'$html'";
 
 my $dom = Mojo::DOM->new($html);
+my ($title, $author);
 
 #my $title_element = $dom->at('title');
 my $title_element = $dom->at('html head title');
 if ($title_element) {
-  print "Title: " . $title_element->all_text . "\n";
+  $title = $title_element->all_text;
+  print "Title: " . $title . "\n";
 }
 else {
   print "Failed to find title.\n";
@@ -25,7 +27,8 @@ else {
 
 my $author_element = $dom->at('html head meta[name="author"]');
 if ($author_element) {
-  print "Author: " . $author_element->attr('content') . ".\n";
+  $author = $author_element->attr('content');
+  print "Author: " . $author . ".\n";
 }
 else {
   print "Failed to find author.\n";
