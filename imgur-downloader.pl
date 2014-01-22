@@ -1,5 +1,5 @@
 use strict;
-use LWP::Simple;
+use WWW::Mechanize;
 use Mojo::DOM;
 
 my $temp_html_file = "temp.html";
@@ -9,9 +9,12 @@ my $url = shift;
 die "$0: Must provide an input url" unless $url;
 print "URL: $url\n";
 
-my $return_code = getstore($url, $temp_html_file);
-die "$0: Failed to get page: $return_code" unless defined is_success($return_code);
-print "Return code: $return_code\n";
+my $mech = WWW::Mechanize->new;
+my $response = $mech->get($url);  # , ":content_file" => "temp.html"
+die "$0: Request failed" unless $response->is_success;
+open(my $fout, ">", $temp_html_file) or die "Can not open file '$temp_html_file': $!";
+print $fout $response->decoded_content;
+close($fout);
 
 my $inputFile = $temp_html_file;
 die "Error: Must provide an input file name" unless $inputFile;
