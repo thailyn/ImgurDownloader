@@ -50,7 +50,8 @@ else {
 }
 
 my $num = 0;
-my @image_links = $dom->find('div[id="content"] a[href] img')->each;
+#my @image_links = $dom->find('div[id="content"] a[href] img')->each;  # Using the a[href] element here only finds images that can be zoomed in.
+my @image_links = $dom->find('div[id="content"] div[class="image"] div[class="wrapper"] img')->each;
 foreach my $img_element (@image_links) {
   $num = $num + 1;
   my $link = $img_element->attr('src');
