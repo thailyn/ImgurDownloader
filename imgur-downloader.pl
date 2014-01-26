@@ -9,7 +9,7 @@ my $url = shift;
 die "$0: Must provide an input url" unless $url;
 print "URL: $url\n";
 
-my $mech = WWW::Mechanize->new;
+my $mech = WWW::Mechanize->new( stack_depth => 0 );
 my $response = $mech->get($url);  # , ":content_file" => "temp.html"
 die "$0: Request failed" unless $response->is_success;
 open(my $fout, ">", $temp_html_file) or die "Can not open file '$temp_html_file': $!";
