@@ -58,6 +58,7 @@ foreach my $img_element (@image_links) {
   $link =~ s|//|/|g;
   #print "$num: 'http:$link'\n";
 }
+print "Parsed album page.  Album images: $num\n";
 
 my $directory_name = "$title - $author";
 $directory_name =~ s/[\:\\\/\*\?\"<>\|]/_/g;
