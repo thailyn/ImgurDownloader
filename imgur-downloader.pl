@@ -86,11 +86,9 @@ for my $link (@image_links) {
     
   my $file_path = $directory_name . "/" . sprintf("%03d", $num) . "-" . $file_name;
   print sprintf("%03d", $num) . ": $link -> $file_path...";
-  $response = $mech->get($image_url);
+  $response = $mech->get($image_url,
+                        ':content_file' => $file_path);
   die "$0: Request failed" unless $response->is_success;
-  open(my $image_fout, ">:raw", $file_path) or die "Can not open file '$temp_html_file': $!";
-  print $image_fout $response->decoded_content;
-  close($image_fout);
   print " done.\n";
 }
 
