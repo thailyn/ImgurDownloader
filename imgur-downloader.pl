@@ -1,10 +1,10 @@
 use strict;
 use WWW::Mechanize;
 use Mojo::DOM;
+use Term::ProgressBar 2.00;
 
 my $temp_html_file = "temp.html";
 
-# 'http://imgur.com/a/3mGHa/noscript'
 my $url = shift;
 die "$0: Must provide an input url" unless $url;
 print "URL: $url\n";
@@ -27,10 +27,14 @@ close($fh);
 print "All good.  File: $inputFile.\n";
 #print "Contents:\n'$html'";
 
+# Add the callbacks after the initial page request.
+$mech->add_handler( response_header => \&header_callback, m_code => 2 );  #m_domain => "imgur.com"
+$mech->add_handler( response_data => \&data_callback, m_code => 2 );
+$mech->add_handler( response_done => \&done_callback, m_code => 2 );
+
 my $dom = Mojo::DOM->new($html);
 my ($title, $author);
 
-#my $title_element = $dom->at('title');
 my $title_element = $dom->at('html head title');
 if ($title_element) {
   $title = $title_element->all_text;
@@ -73,12 +77,27 @@ else {
   print "Created directory '$directory_name'.\n";
 }
 
+my $num_pictures = $num;
+my $next_progress_update = 0;
+
 $num = 0;
+my $progress;
+my $file_num_width = length($num_pictures);
+my $file_size = 0;
+my $file_name;
+my $downloaded_size = 0;
+my $total_file_size = 0;
+my $total_downloaded_size = 0;
 for my $link (@image_links) {
   $num = $num + 1;
 
+  $progress = undef;
+  $file_size = 0;
+  $downloaded_size = 0;
+  $next_progress_update = 0;
+
   my $image_url = $link->attr('src');
-  my $file_name = $image_url;
+  $file_name = $image_url;
 
   # regex would not handle files without extensions
   if ($file_name =~ m|i\.imgur\.com\/(.*\.[a-zA-Z0-9]+)|) {
@@ -86,11 +105,97 @@ for my $link (@image_links) {
   }
     
   my $file_path = $directory_name . "/" . sprintf("%03d", $num) . "-" . $file_name;
-  print sprintf("%03d", $num) . ": $link -> $file_path...";
+  #print sprintf("%03d", $num) . ": $link -> $file_path...";
+  #$progress->message(sprintf("%03d", $num) . ": $link -> $file_path...");
+
+  #$progress = Term::ProgressBar->new({ name => "($num/$num_pictures): $file_name - ???? B",
+  #                                     count => 100,
+  #                                     remove => 1});
+  #$progress->minor(0);
+
   $response = $mech->get($image_url,
                         ':content_file' => $file_path);
   die "$0: Request failed" unless $response->is_success;
-  print " done.\n";
+
+  unless ($progress) {
+    initialize_progress_bar($progress, $response) unless $progress;
+    $progress->message("Initialized progress bar in main loop.");
+  }
+
+  unless ($file_size) {
+    #$progress->message("Setting file size info after downloading.");
+    $file_size = $downloaded_size;
+    $total_file_size = $total_file_size + $file_size;
+  }
+
+  $progress->message(sprintf("Completed (%${file_num_width}s/%s): %s (%s B) (%s)",
+                             $num, $num_pictures, $file_name, $file_size, $response->code));
+
+  #print " done.\n";
 }
 
-print "Done.";
+print "Done.  Total size downloaded: $total_downloaded_size B";
+
+sub initialize_progress_bar {
+  my ($progress, $response) = @_;
+
+  $file_size = $response->header('content_length');
+
+  $total_file_size = $total_file_size + $file_size if $file_size;
+
+  $progress = Term::ProgressBar->new({ name => "($num/$num_pictures): $file_name - $file_size B",
+                                       count => ($file_size or 100),
+                                       remove => 1});
+  $progress->minor(0);
+  #$progress->message("No content length!") unless $file_size;
+
+  return $progress;
+}
+
+sub header_callback {
+  my ($response, $ua, $h) = @_;
+  #print "Header callback. h = $h\n";
+  #print "Response code: " . $response->code . "\n";
+  #print "Content type: " . $response->header('content_type') . "\n";
+  #print "Content length: " . $response->header('content_length') . "\n";
+
+  $progress = initialize_progress_bar($progress, $response);
+
+  #$progress->name("($num/$num_pictures): $file_name - $file_size B");
+  #$progress->target($file_size);
+  #$progress->minor(0);
+}
+
+sub data_callback {
+  my ($response, $ua, $h, $data) = @_;
+
+  #print ".";
+  #print "Length: " . length($data) . "\n";
+
+  unless ($progress) {
+    initialize_progress_bar($progress, $response) unless $progress;
+    $progress = $progress->message("Initialized progress bar in data callback.");
+  }
+
+  $downloaded_size = $downloaded_size + length($data);
+  $total_downloaded_size = $total_downloaded_size + length($data);
+  #$progress->name("($num/$num_pictures): $file_name - $downloaded_size / $file_size B");
+  $next_progress_update = $progress->update($downloaded_size)
+    if $downloaded_size >= $next_progress_update and $file_size;
+
+  return 1;
+}
+
+sub done_callback {
+  my ($response, $ua, $h) = @_;
+
+  #print "!";
+
+  unless ($progress) {
+    $progress = initialize_progress_bar($progress, $response);
+    $progress->message("Initialized progress bar in done callback.");
+  }
+
+  $progress->update($file_size or 100)
+    if $downloaded_size >= $next_progress_update;
+}
